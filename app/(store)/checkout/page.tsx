@@ -13,9 +13,9 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
+    name: typeof window !== 'undefined' ? localStorage.getItem('customer_name') || '' : '',
+    phone: typeof window !== 'undefined' ? localStorage.getItem('customer_phone') || '' : '',
+    address: typeof window !== 'undefined' ? localStorage.getItem('customer_address') || '' : '',
     deliverySlot: '',
     notes: '',
   })
@@ -32,23 +32,46 @@ export default function CheckoutPage() {
     try {
       const supabase = createClient()
 
-      // Upsert customer
-      const { data: customer } = await supabase
+      // Save customer details locally for order history
+      localStorage.setItem('customer_name', form.name)
+      localStorage.setItem('customer_phone', form.phone)
+      localStorage.setItem('customer_address', form.address)
+
+      // Try to find existing customer by phone
+      let customerId: string | null = null
+      const { data: existing } = await supabase
         .from('customers')
-        .upsert({ name: form.name, phone: form.phone, address: form.address }, { onConflict: 'phone' })
-        .select()
-        .single()
+        .select('id')
+        .eq('phone', form.phone)
+        .maybeSingle()
+
+      if (existing) {
+        // Update existing customer info
+        await supabase
+          .from('customers')
+          .update({ name: form.name, address: form.address })
+          .eq('phone', form.phone)
+        customerId = existing.id
+      } else {
+        // Insert new customer
+        const { data: newCustomer } = await supabase
+          .from('customers')
+          .insert({ name: form.name, phone: form.phone, address: form.address })
+          .select('id')
+          .single()
+        customerId = newCustomer?.id || null
+      }
 
       // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          customer_id: customer?.id || null,
+          customer_id: customerId,
           customer_name: form.name,
           customer_phone: form.phone,
           customer_address: form.address,
-          delivery_slot: form.deliverySlot,
-          notes: form.notes,
+          delivery_slot: form.deliverySlot || null,
+          notes: form.notes || null,
           total_amount: totalAmount,
           status: 'pending',
           whatsapp_sent: true,
@@ -70,17 +93,11 @@ export default function CheckoutPage() {
         }))
       )
 
-      // Build WhatsApp URL
+      // Build WhatsApp URL and open
       const msg = generateWhatsAppMessage(
-        items,
-        form.name,
-        form.phone,
-        form.address,
-        form.deliverySlot,
-        form.notes
+        items, form.name, form.phone, form.address, form.deliverySlot, form.notes
       )
-      const waPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
-      const waUrl = getWhatsAppUrl(waPhone, msg)
+      const waUrl = getWhatsAppUrl(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '', msg)
 
       clearCart()
       window.open(waUrl, '_blank')
@@ -111,48 +128,35 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
 
       <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-6">
-        {/* Form */}
         <div className="md:col-span-2 space-y-5">
           <div className="card p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Delivery Details</h2>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} required
-                className="input" placeholder="Your name" />
+              <input name="name" value={form.name} onChange={handleChange} required className="input" placeholder="Your name" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
-              <input name="phone" value={form.phone} onChange={handleChange} required type="tel"
-                className="input" placeholder="+91 98765 43210" />
+              <input name="phone" value={form.phone} onChange={handleChange} required type="tel" className="input" placeholder="+91 98765 43210" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Address *</label>
-              <textarea name="address" value={form.address} onChange={handleChange} required
-                className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
+              <textarea name="address" value={form.address} onChange={handleChange} required className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Delivery Slot</label>
               <select name="deliverySlot" value={form.deliverySlot} onChange={handleChange} className="input">
                 <option value="">Select a time slot</option>
-                {DELIVERY_SLOTS.map(slot => (
-                  <option key={slot} value={slot}>{slot}</option>
-                ))}
+                {DELIVERY_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Special Instructions</label>
-              <textarea name="notes" value={form.notes} onChange={handleChange}
-                className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
+              <textarea name="notes" value={form.notes} onChange={handleChange} className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
             </div>
           </div>
         </div>
 
-        {/* Summary */}
         <div className="md:col-span-1">
           <div className="card p-5 sticky top-24 space-y-4">
             <h2 className="font-bold text-gray-900">Order Summary</h2>
@@ -172,9 +176,7 @@ export default function CheckoutPage() {
               <MessageCircle className="w-5 h-5" />
               {loading ? 'Placing Order…' : 'Place Order via WhatsApp'}
             </button>
-            <p className="text-xs text-gray-400 text-center">
-              Payment collected on delivery (Cash / UPI)
-            </p>
+            <p className="text-xs text-gray-400 text-center">Payment collected on delivery (Cash / UPI)</p>
           </div>
         </div>
       </form>
