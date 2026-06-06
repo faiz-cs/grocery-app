@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -19,29 +17,16 @@ export default function AdminLoginPage() {
     setError('')
 
     const supabase = createClient()
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (signInError || !data.user) {
+    if (signInError) {
       setError('Invalid email or password')
       setLoading(false)
       return
     }
 
-    // Check admin_users table
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('id')
-      .eq('id', data.user.id)
-      .single()
-
-    if (!adminUser) {
-      await supabase.auth.signOut()
-      setError('You do not have admin access.')
-      setLoading(false)
-      return
-    }
-
-    // Use window.location for a hard redirect to avoid Next.js router cache issues
+    // Let the admin layout handle the admin_users check server-side
+    // Hard redirect so cookies are sent with the next request
     window.location.href = '/admin'
   }
 
