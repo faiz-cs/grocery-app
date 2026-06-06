@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { slugify } from '@/lib/utils'
 import type { Category, Product } from '@/types'
-import { Upload } from 'lucide-react'
+import ImageUploader from './ImageUploader'
 
 interface Props {
   product?: Product
@@ -29,7 +29,6 @@ export default function ProductForm({ product, categories }: Props) {
     stock_quantity: product?.stock_quantity?.toString() || '',
     image_url: product?.image_url || '',
   })
-  const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -49,16 +48,6 @@ export default function ProductForm({ product, categories }: Props) {
     setError('')
     const supabase = createClient()
 
-    let imageUrl = form.image_url
-    if (imageFile) {
-      const ext = imageFile.name.split('.').pop()
-      const path = `products/${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('images').upload(path, imageFile)
-      if (uploadError) { setError(uploadError.message); setLoading(false); return }
-      const { data: urlData } = supabase.storage.from('images').getPublicUrl(path)
-      imageUrl = urlData.publicUrl
-    }
-
     const payload = {
       name: form.name,
       slug: form.slug,
@@ -70,7 +59,7 @@ export default function ProductForm({ product, categories }: Props) {
       is_available: form.is_available,
       is_featured: form.is_featured,
       stock_quantity: form.stock_quantity ? parseInt(form.stock_quantity) : null,
-      image_url: imageUrl || null,
+      image_url: form.image_url || null,
     }
 
     const { error: dbError } = isEdit
@@ -88,7 +77,6 @@ export default function ProductForm({ product, categories }: Props) {
 
       <div className="card p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Basic Info</h2>
-
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Name *</label>
@@ -144,18 +132,13 @@ export default function ProductForm({ product, categories }: Props) {
         </div>
       </div>
 
+      {/* Image section using the new uploader */}
       <div className="card p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Product Image</h2>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Image URL</label>
-          <input name="image_url" value={form.image_url} onChange={handleChange} className="input" placeholder="https://…" />
-        </div>
-        <div className="text-center text-xs text-gray-400">— or upload a file —</div>
-        <label className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:border-brand-300 hover:bg-brand-50 transition-colors">
-          <Upload className="w-6 h-6 text-gray-400" />
-          <span className="text-sm text-gray-500">{imageFile ? imageFile.name : 'Click to upload image'}</span>
-          <input type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] || null)} />
-        </label>
+        <ImageUploader
+          value={form.image_url}
+          onChange={url => setForm(prev => ({ ...prev, image_url: url }))}
+        />
       </div>
 
       <div className="flex gap-3">
