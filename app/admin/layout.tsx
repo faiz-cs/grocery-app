@@ -4,9 +4,12 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/admin/login')
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/admin/login')
+  }
 
   const { data: adminUser } = await supabase
     .from('admin_users')
@@ -14,7 +17,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  if (!adminUser) redirect('/admin/login')
+  if (!adminUser) {
+    // User is authenticated but not an admin — sign them out and redirect
+    await supabase.auth.signOut()
+    redirect('/admin/login')
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
