@@ -40,57 +40,61 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           </div>
         )}
         {discount && (
-          <span className="absolute top-2 left-2 badge bg-red-500 text-white">
+          <span className="absolute top-2 left-2 badge bg-red-500 text-white text-[10px] px-1.5 py-0.5">
             -{discount}%
           </span>
         )}
         {!product.is_available && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <span className="badge bg-gray-200 text-gray-600">Out of Stock</span>
+            <span className="badge bg-gray-200 text-gray-600 text-xs">Out of Stock</span>
           </div>
         )}
       </Link>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 p-3 gap-1">
-        <Link href={`/product/${product.slug}`} className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-brand-600 transition-colors">
+      <div className="flex flex-col flex-1 p-2.5 gap-1">
+        <Link
+          href={`/product/${product.slug}`}
+          className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-brand-600 transition-colors leading-tight"
+        >
           {product.name}
         </Link>
         <p className="text-xs text-gray-400">{product.unit}</p>
 
-        <div className="mt-auto pt-2 flex items-center justify-between gap-2">
-          <div>
-            <span className="text-base font-bold text-gray-900">
+        {/* Price row */}
+        <div className="mt-auto pt-1.5">
+          <div className="flex items-baseline gap-1 mb-2">
+            <span className="text-sm font-bold text-gray-900">
               {formatCurrency(product.price)}
             </span>
             {product.original_price && (
-              <span className="ml-1 text-xs text-gray-400 line-through">
+              <span className="text-xs text-gray-400 line-through">
                 {formatCurrency(product.original_price)}
               </span>
             )}
           </div>
 
+          {/* Add to cart controls — full width */}
           {product.is_available && (
             quantity === 0 ? (
               <button
                 onClick={() => addItem(product)}
-                className="flex items-center gap-1 bg-brand-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-brand-700 transition-colors"
+                className="w-full flex items-center justify-center gap-1 bg-brand-600 text-white rounded-lg py-1.5 text-xs font-semibold hover:bg-brand-700 active:scale-95 transition-all"
               >
-                <Plus className="w-3 h-3" />
-                Add
+                <Plus className="w-3 h-3" /> Add
               </button>
             ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between w-full bg-gray-50 rounded-lg p-0.5">
                 <button
                   onClick={() => updateQuantity(product.id, quantity - 1)}
-                  className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  className="w-7 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100 active:scale-95 transition-all shadow-sm"
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-3 h-3 text-gray-600" />
                 </button>
-                <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
+                <span className="flex-1 text-center text-sm font-bold text-gray-900">{quantity}</span>
                 <button
                   onClick={() => addItem(product, 1)}
-                  className="w-7 h-7 rounded-lg bg-brand-600 text-white flex items-center justify-center hover:bg-brand-700 transition-colors"
+                  className="w-7 h-7 rounded-md bg-brand-600 text-white flex items-center justify-center hover:bg-brand-700 active:scale-95 transition-all shadow-sm"
                 >
                   <Plus className="w-3 h-3" />
                 </button>

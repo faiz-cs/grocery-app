@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Upload, Camera, Link, X, RotateCcw, Check } from 'lucide-react'
-import Image from 'next/image'
+import { Upload, Camera, Link, X, RotateCcw, Check, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props {
@@ -10,7 +9,7 @@ interface Props {
   onChange: (url: string) => void
 }
 
-type Mode = 'idle' | 'url' | 'upload' | 'camera' | 'preview'
+type Mode = 'idle' | 'url' | 'camera' | 'preview'
 
 export default function ImageUploader({ value, onChange }: Props) {
   const [mode, setMode] = useState<Mode>(value ? 'preview' : 'idle')
@@ -18,13 +17,13 @@ export default function ImageUploader({ value, onChange }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [stream, setStream] = useState<MediaStream | null>(null)
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [imgError, setImgError] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // ── Upload file to Supabase Storage ──────────────────────────────
+  // ── Upload blob/file to Supabase Storage ─────────────────────────
   const uploadFile = useCallback(async (file: File) => {
     setUploading(true)
     setError('')
@@ -41,20 +40,23 @@ export default function ImageUploader({ value, onChange }: Props) {
     }
     const { data } = supabase.storage.from('images').getPublicUrl(path)
     onChange(data.publicUrl)
+    setImgError(false)
     setMode('preview')
     setUploading(false)
   }, [onChange])
 
-  // ── Handle file input ─────────────────────────────────────────────
+  // ── File input handler ────────────────────────────────────────────
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) uploadFile(file)
   }
 
-  // ── URL submit ────────────────────────────────────────────────────
+  // ── URL submit — store as-is, use plain <img> to display ─────────
   const handleUrlSubmit = () => {
-    if (!urlInput.trim()) return
-    onChange(urlInput.trim())
+    const url = urlInput.trim()
+    if (!url) return
+    onChange(url)
+    setImgError(false)
     setMode('preview')
   }
 
@@ -74,7 +76,7 @@ export default function ImageUploader({ value, onChange }: Props) {
         }
       }, 100)
     } catch {
-      setError('Camera access denied or not available.')
+      setError('Camera access denied or not available on this device.')
     }
   }
 
@@ -90,38 +92,43 @@ export default function ImageUploader({ value, onChange }: Props) {
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
     canvas.getContext('2d')?.drawImage(video, 0, 0)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
-    setCapturedImage(dataUrl)
-    stopCamera()
-    setMode('preview')
-    // Convert dataURL to File and upload
-    fetch(dataUrl)
-      .then(r => r.blob())
-      .then(blob => uploadFile(new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' })))
-  }
-
-  const retakePhoto = () => {
-    setCapturedImage(null)
-    startCamera()
+    canvas.toBlob(blob => {
+      if (!blob) return
+      stopCamera()
+      setMode('preview')
+      uploadFile(new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' }))
+    }, 'image/jpeg', 0.9)
   }
 
   const reset = () => {
     stopCamera()
-    setCapturedImage(null)
     onChange('')
     setUrlInput('')
     setError('')
+    setImgError(false)
     setMode('idle')
   }
 
   // ── Preview ───────────────────────────────────────────────────────
-  const previewSrc = capturedImage || value
-
-  if (mode === 'preview' && previewSrc) {
+  if (mode === 'preview' && value) {
     return (
-      <div className="space-y-3">
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
-          <Image src={previewSrc} alt="Product" fill className="object-contain" sizes="600px" />
+      <div className="space-y-2">
+        <div className="relative w-full rounded-xl overflow-hidden bg-gray-100 border border-gray-200" style={{ minHeight: 200 }}>
+          {/* Use plain <img> so any URL works without Next.js domain restrictions */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Product preview"
+            onError={() => setImgError(true)}
+            onLoad={() => setImgError(false)}
+            className="w-full h-48 object-contain"
+          />
+          {imgError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400 bg-gray-50">
+              <AlertCircle className="w-8 h-8" />
+              <p className="text-xs text-center px-4">Image failed to load.<br/>Check the URL or try uploading instead.</p>
+            </div>
+          )}
           <button
             type="button"
             onClick={reset}
@@ -130,14 +137,18 @@ export default function ImageUploader({ value, onChange }: Props) {
             <X className="w-4 h-4" />
           </button>
         </div>
+
         {uploading && (
-          <p className="text-xs text-brand-600 text-center animate-pulse">Uploading image…</p>
+          <p className="text-xs text-brand-600 text-center animate-pulse">⏳ Uploading to storage…</p>
         )}
-        {!uploading && (
+        {!uploading && !imgError && (
           <p className="text-xs text-green-600 text-center flex items-center justify-center gap-1">
             <Check className="w-3 h-3" /> Image ready
           </p>
         )}
+
+        {/* Show current URL for reference */}
+        <p className="text-xs text-gray-400 truncate text-center">{value}</p>
       </div>
     )
   }
@@ -146,35 +157,28 @@ export default function ImageUploader({ value, onChange }: Props) {
   if (mode === 'camera') {
     return (
       <div className="space-y-3">
-        <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+        <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
           <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
           <canvas ref={canvasRef} className="hidden" />
         </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={capturePhoto}
-            className="btn-primary flex-1 py-3"
-          >
+          <button type="button" onClick={capturePhoto} className="btn-primary flex-1 py-3">
             <Camera className="w-4 h-4" /> Capture Photo
           </button>
-          <button
-            type="button"
-            onClick={() => { stopCamera(); setMode('idle') }}
-            className="btn-secondary px-4"
-          >
+          <button type="button" onClick={() => { stopCamera(); setMode('idle') }} className="btn-secondary px-4">
             <X className="w-4 h-4" />
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     )
   }
 
-  // ── URL input mode ────────────────────────────────────────────────
+  // ── URL input ─────────────────────────────────────────────────────
   if (mode === 'url') {
     return (
       <div className="space-y-3">
+        <p className="text-xs text-gray-500">Paste any image URL from the web (Google Images, product sites, etc.)</p>
         <div className="flex gap-2">
           <input
             type="url"
@@ -182,29 +186,26 @@ export default function ImageUploader({ value, onChange }: Props) {
             onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleUrlSubmit())}
             className="input flex-1"
-            placeholder="https://example.com/image.jpg"
+            placeholder="https://example.com/tomato.jpg"
             autoFocus
           />
-          <button type="button" onClick={handleUrlSubmit} className="btn-primary px-4">
+          <button type="button" onClick={handleUrlSubmit} disabled={!urlInput.trim()} className="btn-primary px-4">
             <Check className="w-4 h-4" />
           </button>
           <button type="button" onClick={() => setMode('idle')} className="btn-secondary px-3">
             <X className="w-4 h-4" />
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     )
   }
 
-  // ── Idle — pick a method ──────────────────────────────────────────
+  // ── Idle ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-3">
       <canvas ref={canvasRef} className="hidden" />
-
-      {/* 3 options */}
       <div className="grid grid-cols-3 gap-3">
-        {/* URL */}
         <button
           type="button"
           onClick={() => setMode('url')}
@@ -214,7 +215,6 @@ export default function ImageUploader({ value, onChange }: Props) {
           <span className="text-xs font-medium text-gray-500 group-hover:text-brand-700">Paste URL</span>
         </button>
 
-        {/* Upload */}
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
@@ -227,7 +227,6 @@ export default function ImageUploader({ value, onChange }: Props) {
           </span>
         </button>
 
-        {/* Camera */}
         <button
           type="button"
           onClick={startCamera}
@@ -239,7 +238,7 @@ export default function ImageUploader({ value, onChange }: Props) {
       </div>
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
 }
