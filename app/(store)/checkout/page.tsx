@@ -6,21 +6,36 @@ import { formatCurrency, getWhatsAppUrl, DELIVERY_SLOTS } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { MessageCircle, ArrowLeft, CheckCircle } from 'lucide-react'
+import { MessageCircle, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function CheckoutPage() {
   const { items, totalAmount, clearCart } = useCart()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
   const [form, setForm] = useState({
-    name: typeof window !== 'undefined' ? localStorage.getItem('customer_name') || '' : '',
-    phone: typeof window !== 'undefined' ? localStorage.getItem('customer_phone') || '' : '',
-    address: typeof window !== 'undefined' ? localStorage.getItem('customer_address') || '' : '',
+    name: '',
+    phone: '',
+    address: '',
     deliverySlot: '',
     notes: '',
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  // Pre-fill from localStorage on mount
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      setForm(prev => ({
+        ...prev,
+        name: localStorage.getItem('customer_name') || '',
+        phone: localStorage.getItem('customer_phone') || '',
+        address: localStorage.getItem('customer_address') || '',
+      }))
+    }
+  })
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -28,38 +43,42 @@ export default function CheckoutPage() {
     e.preventDefault()
     if (items.length === 0) return
     setLoading(true)
+    setErrorMsg('')
 
     try {
       const supabase = createClient()
 
-      // Save customer details locally for order history
+      // Save to localStorage
       localStorage.setItem('customer_name', form.name)
       localStorage.setItem('customer_phone', form.phone)
       localStorage.setItem('customer_address', form.address)
 
-      // Try to find existing customer by phone
+      // Upsert customer by phone
       let customerId: string | null = null
-      const { data: existing } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('phone', form.phone)
-        .maybeSingle()
-
-      if (existing) {
-        // Update existing customer info
-        await supabase
+      try {
+        const { data: existing } = await supabase
           .from('customers')
-          .update({ name: form.name, address: form.address })
-          .eq('phone', form.phone)
-        customerId = existing.id
-      } else {
-        // Insert new customer
-        const { data: newCustomer } = await supabase
-          .from('customers')
-          .insert({ name: form.name, phone: form.phone, address: form.address })
           .select('id')
-          .single()
-        customerId = newCustomer?.id || null
+          .eq('phone', form.phone)
+          .maybeSingle()
+
+        if (existing) {
+          await supabase
+            .from('customers')
+            .update({ name: form.name, address: form.address })
+            .eq('phone', form.phone)
+          customerId = existing.id
+        } else {
+          const { data: newC } = await supabase
+            .from('customers')
+            .insert({ name: form.name, phone: form.phone, address: form.address })
+            .select('id')
+            .single()
+          customerId = newC?.id || null
+        }
+      } catch {
+        // Customer save failing shouldn't block the order
+        customerId = null
       }
 
       // Create order
@@ -79,10 +98,15 @@ export default function CheckoutPage() {
         .select()
         .single()
 
-      if (orderError) throw orderError
+      if (orderError) {
+        console.error('Order error:', orderError)
+        setErrorMsg(`Order failed: ${orderError.message}`)
+        setLoading(false)
+        return
+      }
 
       // Insert order items
-      await supabase.from('order_items').insert(
+      const { error: itemsError } = await supabase.from('order_items').insert(
         items.map(i => ({
           order_id: order.id,
           product_id: i.product.id,
@@ -93,18 +117,41 @@ export default function CheckoutPage() {
         }))
       )
 
-      // Build WhatsApp URL and open
-      const msg = generateWhatsAppMessage(
-        items, form.name, form.phone, form.address, form.deliverySlot, form.notes
-      )
-      const waUrl = getWhatsAppUrl(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '', msg)
+      if (itemsError) {
+        console.error('Items error:', itemsError)
+        // Order created — continue anyway, WhatsApp message has the items
+      }
 
+      // Build WhatsApp message and open
+      const msg = generateWhatsAppMessage(
+        items,
+        form.name,
+        form.phone,
+        form.address,
+        form.deliverySlot,
+        form.notes
+      )
+      const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
+      if (!waNumber) {
+        setErrorMsg('Store WhatsApp number not configured. Contact the store directly.')
+        setLoading(false)
+        return
+      }
+
+      const waUrl = getWhatsAppUrl(waNumber, msg)
       clearCart()
-      window.open(waUrl, '_blank')
+
+      // On mobile, window.open is blocked after async ops — use location.href
+      // Navigate to orders page first, then open WhatsApp
       router.push(`/orders?success=${order.id}`)
-    } catch (err) {
-      console.error(err)
-      alert('Something went wrong. Please try again.')
+      setTimeout(() => {
+        window.location.href = waUrl
+      }, 300)
+
+    } catch (err: unknown) {
+      console.error('Checkout error:', err)
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setErrorMsg(`Something went wrong: ${message}`)
     } finally {
       setLoading(false)
     }
@@ -127,21 +174,31 @@ export default function CheckoutPage() {
       </Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
 
+      {errorMsg && (
+        <div className="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-5">
           <div className="card p-5 space-y-4">
             <h2 className="font-bold text-gray-900">Delivery Details</h2>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} required className="input" placeholder="Your name" />
+              <input name="name" value={form.name} onChange={handleChange} required
+                className="input" placeholder="Your name" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
-              <input name="phone" value={form.phone} onChange={handleChange} required type="tel" className="input" placeholder="+91 98765 43210" />
+              <input name="phone" value={form.phone} onChange={handleChange} required
+                type="tel" className="input" placeholder="+91 98765 43210" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Address *</label>
-              <textarea name="address" value={form.address} onChange={handleChange} required className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
+              <textarea name="address" value={form.address} onChange={handleChange} required
+                className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Delivery Slot</label>
@@ -152,7 +209,8 @@ export default function CheckoutPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Special Instructions</label>
-              <textarea name="notes" value={form.notes} onChange={handleChange} className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
+              <textarea name="notes" value={form.notes} onChange={handleChange}
+                className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
             </div>
           </div>
         </div>
@@ -176,7 +234,9 @@ export default function CheckoutPage() {
               <MessageCircle className="w-5 h-5" />
               {loading ? 'Placing Order…' : 'Place Order via WhatsApp'}
             </button>
-            <p className="text-xs text-gray-400 text-center">Payment collected on delivery (Cash / UPI)</p>
+            <p className="text-xs text-gray-400 text-center">
+              Payment collected on delivery (Cash / UPI)
+            </p>
           </div>
         </div>
       </form>
