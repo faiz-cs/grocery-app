@@ -34,7 +34,15 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">F</div>
+          <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center mx-auto mb-3">
+            <svg viewBox="0 0 512 512" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M140 220 L372 220 L340 360 Q336 380 316 380 L196 380 Q176 380 172 360 Z" fill="white"/>
+              <path d="M190 220 Q170 160 210 130 Q240 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+              <path d="M322 220 Q342 160 302 130 Q272 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+              <line x1="200" y1="270" x2="312" y2="270" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+              <line x1="210" y1="310" x2="302" y2="310" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+            </svg>
+          </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
           <p className="text-sm text-gray-500 mt-1">FreshMart Dashboard</p>
         </div>

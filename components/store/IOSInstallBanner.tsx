@@ -32,8 +32,14 @@ export default function IOSInstallBanner() {
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4">
         <div className="flex items-start gap-3">
           {/* App icon */}
-          <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
-            F
+          <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 512 512" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M140 220 L372 220 L340 360 Q336 380 316 380 L196 380 Q176 380 172 360 Z" fill="white"/>
+              <path d="M190 220 Q170 160 210 130 Q240 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+              <path d="M322 220 Q342 160 302 130 Q272 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+              <line x1="200" y1="270" x2="312" y2="270" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+              <line x1="210" y1="310" x2="302" y2="310" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+            </svg>
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 text-sm">Install FreshMart</p>

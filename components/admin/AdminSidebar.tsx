@@ -40,7 +40,15 @@ export default function AdminSidebar({ adminName, adminRole }: Props) {
       {/* Logo */}
       <div className="p-5 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-sm">F</div>
+          <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 512 512" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M140 220 L372 220 L340 360 Q336 380 316 380 L196 380 Q176 380 172 360 Z" fill="white"/>
+                <path d="M190 220 Q170 160 210 130 Q240 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+                <path d="M322 220 Q342 160 302 130 Q272 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
+                <line x1="200" y1="270" x2="312" y2="270" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+                <line x1="210" y1="310" x2="302" y2="310" stroke="#16a34a" strokeWidth="22" strokeLinecap="round"/>
+              </svg>
+            </div>
           <div>
             <p className="text-sm font-bold text-gray-900">{process.env.NEXT_PUBLIC_STORE_NAME || 'FreshMart'}</p>
             <p className="text-xs text-gray-400">Admin Panel</p>

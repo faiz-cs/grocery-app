@@ -1,4 +1,27 @@
-<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'>
-  <rect width='512' height='512' rx='80' fill='#16a34a'/>
-  <text x='256' y='320' font-size='280' font-family='Arial,sans-serif' font-weight='bold' fill='white' text-anchor='middle'>F</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Green rounded background -->
+  <rect width="512" height="512" rx="100" fill="#16a34a"/>
+  
+  <!-- Shopping basket -->
+  <!-- Basket body -->
+  <path d="M140 220 L372 220 L340 360 Q336 380 316 380 L196 380 Q176 380 172 360 Z" 
+        fill="white" opacity="0.95"/>
+  
+  <!-- Basket handle left -->
+  <path d="M190 220 Q170 160 210 130 Q240 108 256 120" 
+        fill="none" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  
+  <!-- Basket handle right -->
+  <path d="M322 220 Q342 160 302 130 Q272 108 256 120" 
+        fill="none" stroke="white" stroke-width="28" stroke-linecap="round"/>
+
+  <!-- Cart lines inside basket -->
+  <line x1="200" y1="270" x2="312" y2="270" stroke="#16a34a" stroke-width="18" stroke-linecap="round"/>
+  <line x1="210" y1="310" x2="302" y2="310" stroke="#16a34a" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Leaf/fresh indicator -->
+  <circle cx="370" cy="145" r="42" fill="#22c55e"/>
+  <path d="M370 125 Q390 140 385 165 Q370 158 355 165 Q350 140 370 125Z" 
+        fill="white"/>
+  <line x1="370" y1="125" x2="370" y2="168" stroke="#16a34a" stroke-width="5" stroke-linecap="round"/>
 </svg>
