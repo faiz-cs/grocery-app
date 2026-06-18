@@ -49,15 +49,17 @@ export default function AdminOrdersPage() {
     setUpdatingId(orderId)
 
     const supabase = createClient()
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('orders')
       .update({ status: newStatus })
       .eq('id', orderId)
+      .select()
 
-    if (error) {
-      // Revert on failure
-      console.error('Status update failed:', error)
+    if (error || !data || data.length === 0) {
+      console.error('Status update failed:', error, 'data:', data)
+      // Revert optimistic update
       fetchOrders()
+      alert(`Failed to update status: ${error?.message || 'No rows updated — check RLS policies'}`)
     }
 
     setUpdatingId(null)
