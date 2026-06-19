@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Grid3x3 } from 'lucide-react'
 import type { Category } from '@/types'
 
@@ -24,11 +23,16 @@ export default async function CategoriesPage() {
             href={`/category/${cat.slug}`}
             className="card p-5 flex flex-col items-center gap-3 hover:shadow-md hover:border-brand-200 border border-transparent transition-all group"
           >
-            <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center overflow-hidden">
               {cat.image_url ? (
-                <Image src={cat.image_url} alt={cat.name} width={64} height={64} className="object-cover" />
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={cat.image_url}
+                  alt={cat.name}
+                  className="w-full h-full object-cover rounded-2xl"
+                />
               ) : (
-                <Grid3x3 className="w-7 h-7 text-brand-400" />
+                <Grid3x3 className="w-8 h-8 text-brand-400" />
               )}
             </div>
             <span className="text-sm font-semibold text-gray-800 text-center group-hover:text-brand-700 transition-colors">
