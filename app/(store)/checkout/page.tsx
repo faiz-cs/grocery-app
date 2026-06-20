@@ -13,15 +13,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    deliverySlot: '',
-    notes: '',
-  })
+  const [form, setForm] = useState({ name: '', phone: '', address: '', deliverySlot: '', notes: '' })
 
-  // Pre-fill from localStorage on mount
   useState(() => {
     if (typeof window !== 'undefined') {
       setForm(prev => ({
@@ -33,9 +26,7 @@ export default function CheckoutPage() {
     }
   })
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -47,41 +38,22 @@ export default function CheckoutPage() {
 
     try {
       const supabase = createClient()
-
-      // Save to localStorage
       localStorage.setItem('customer_name', form.name)
       localStorage.setItem('customer_phone', form.phone)
       localStorage.setItem('customer_address', form.address)
 
-      // Upsert customer by phone
       let customerId: string | null = null
       try {
-        const { data: existing } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('phone', form.phone)
-          .maybeSingle()
-
+        const { data: existing } = await supabase.from('customers').select('id').eq('phone', form.phone).maybeSingle()
         if (existing) {
-          await supabase
-            .from('customers')
-            .update({ name: form.name, address: form.address })
-            .eq('phone', form.phone)
+          await supabase.from('customers').update({ name: form.name, address: form.address }).eq('phone', form.phone)
           customerId = existing.id
         } else {
-          const { data: newC } = await supabase
-            .from('customers')
-            .insert({ name: form.name, phone: form.phone, address: form.address })
-            .select('id')
-            .single()
+          const { data: newC } = await supabase.from('customers').insert({ name: form.name, phone: form.phone, address: form.address }).select('id').single()
           customerId = newC?.id || null
         }
-      } catch {
-        // Customer save failing shouldn't block the order
-        customerId = null
-      }
+      } catch { customerId = null }
 
-      // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -99,14 +71,12 @@ export default function CheckoutPage() {
         .single()
 
       if (orderError) {
-        console.error('Order error:', orderError)
         setErrorMsg(`Order failed: ${orderError.message}`)
         setLoading(false)
         return
       }
 
-      // Insert order items
-      const { error: itemsError } = await supabase.from('order_items').insert(
+      await supabase.from('order_items').insert(
         items.map(i => ({
           order_id: order.id,
           product_id: i.product.id,
@@ -117,39 +87,20 @@ export default function CheckoutPage() {
         }))
       )
 
-      if (itemsError) {
-        console.error('Items error:', itemsError)
-        // Order created — continue anyway, WhatsApp message has the items
-      }
-
-      // Build WhatsApp message and open
-      const msg = generateWhatsAppMessage(
-        items,
-        form.name,
-        form.phone,
-        form.address,
-        form.deliverySlot,
-        form.notes
-      )
+      const msg = generateWhatsAppMessage(items, form.name, form.phone, form.address, form.deliverySlot, form.notes)
       const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
       if (!waNumber) {
-        setErrorMsg('Store WhatsApp number not configured. Contact the store directly.')
+        setErrorMsg('Store WhatsApp number not configured.')
         setLoading(false)
         return
       }
 
       const waUrl = getWhatsAppUrl(waNumber, msg)
       clearCart()
-
-      // On mobile, window.open is blocked after async ops — use location.href
-      // Navigate to orders page first, then open WhatsApp
       router.push(`/orders?success=${order.id}`)
-      setTimeout(() => {
-        window.location.href = waUrl
-      }, 300)
+      setTimeout(() => { window.location.href = waUrl }, 300)
 
     } catch (err: unknown) {
-      console.error('Checkout error:', err)
       const message = err instanceof Error ? err.message : 'Unknown error'
       setErrorMsg(`Something went wrong: ${message}`)
     } finally {
@@ -160,8 +111,8 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <CheckCircle className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-800 mb-2">No items to checkout</h2>
+        <CheckCircle className="w-16 h-16 text-stone-200 mx-auto mb-4" />
+        <h2 className="text-xl font-extrabold text-stone-800 mb-2">No items to checkout</h2>
         <Link href="/categories" className="btn-primary mt-4">Browse Products</Link>
       </div>
     )
@@ -169,13 +120,13 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <Link href="/cart" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-600 mb-6 transition-colors">
+      <Link href="/cart" className="inline-flex items-center gap-2 text-sm text-stone-500 font-medium hover:text-emerald-700 mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Cart
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+      <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight mb-6">Checkout</h1>
 
       {errorMsg && (
-        <div className="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <div className="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm font-medium">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
@@ -184,57 +135,53 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-5">
           <div className="card p-5 space-y-4">
-            <h2 className="font-bold text-gray-900">Delivery Details</h2>
+            <h2 className="font-extrabold text-stone-900">Delivery Details</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} required
-                className="input" placeholder="Your name" />
+              <label className="block text-sm font-bold text-stone-600 mb-1.5">Full Name *</label>
+              <input name="name" value={form.name} onChange={handleChange} required className="input" placeholder="Your name" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
-              <input name="phone" value={form.phone} onChange={handleChange} required
-                type="tel" className="input" placeholder="+91 98765 43210" />
+              <label className="block text-sm font-bold text-stone-600 mb-1.5">Phone Number *</label>
+              <input name="phone" value={form.phone} onChange={handleChange} required type="tel" className="input" placeholder="+91 98765 43210" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Address *</label>
-              <textarea name="address" value={form.address} onChange={handleChange} required
-                className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
+              <label className="block text-sm font-bold text-stone-600 mb-1.5">Delivery Address *</label>
+              <textarea name="address" value={form.address} onChange={handleChange} required className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Delivery Slot</label>
+              <label className="block text-sm font-bold text-stone-600 mb-1.5">Preferred Delivery Slot</label>
               <select name="deliverySlot" value={form.deliverySlot} onChange={handleChange} className="input">
                 <option value="">Select a time slot</option>
                 {DELIVERY_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Special Instructions</label>
-              <textarea name="notes" value={form.notes} onChange={handleChange}
-                className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
+              <label className="block text-sm font-bold text-stone-600 mb-1.5">Special Instructions</label>
+              <textarea name="notes" value={form.notes} onChange={handleChange} className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
             </div>
           </div>
         </div>
 
         <div className="md:col-span-1">
           <div className="card p-5 sticky top-24 space-y-4">
-            <h2 className="font-bold text-gray-900">Order Summary</h2>
+            <h2 className="font-extrabold text-stone-900">Order Summary</h2>
             <div className="space-y-2 text-sm max-h-48 overflow-y-auto pr-1">
               {items.map(({ product, quantity }) => (
-                <div key={product.id} className="flex justify-between gap-2 text-gray-700">
+                <div key={product.id} className="flex justify-between gap-2 text-stone-600 font-medium">
                   <span className="line-clamp-1">{product.name} × {quantity}</span>
-                  <span className="font-medium shrink-0">{formatCurrency(product.price * quantity)}</span>
+                  <span className="font-bold text-stone-800 shrink-0">{formatCurrency(product.price * quantity)}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900">
+            <div className="border-t border-dashed border-stone-200 pt-3 flex justify-between font-extrabold text-stone-900">
               <span>Total</span>
               <span>{formatCurrency(totalAmount)}</span>
             </div>
-            <button type="submit" disabled={loading} className="btn-whatsapp w-full py-3">
+            <button type="submit" disabled={loading} className="btn-whatsapp w-full">
               <MessageCircle className="w-5 h-5" />
               {loading ? 'Placing Order…' : 'Place Order via WhatsApp'}
             </button>
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-stone-400 text-center font-medium">
               Payment collected on delivery (Cash / UPI)
             </p>
           </div>

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import ProductCard from '@/components/store/ProductCard'
-import { ChevronRight, Zap, Leaf, Clock } from 'lucide-react'
+import { ChevronRight, Leaf, Clock, MessageCircle } from 'lucide-react'
 import type { Banner, Category, Product } from '@/types'
 
 export const revalidate = 60
@@ -12,17 +12,8 @@ export default async function HomePage() {
 
   const [{ data: banners }, { data: categories }, { data: featuredProducts }] =
     await Promise.all([
-      supabase
-        .from('banners')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order'),
-      supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order')
-        .limit(8),
+      supabase.from('banners').select('*').eq('is_active', true).order('display_order'),
+      supabase.from('categories').select('*').eq('is_active', true).order('display_order').limit(8),
       supabase
         .from('products')
         .select('*, category:categories(*)')
@@ -33,44 +24,46 @@ export default async function HomePage() {
     ])
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-10">
+    <div className="max-w-6xl mx-auto px-4 py-5 space-y-9">
       {/* Hero Banner */}
-      {banners && banners.length > 0 ? (
-        <div className="rounded-2xl overflow-hidden bg-gradient-to-r from-brand-600 to-brand-800 text-white relative">
-          <div className="p-8 md:p-12 relative z-10">
-            <h1 className="text-2xl md:text-4xl font-bold mb-2">{banners[0].title}</h1>
-            {banners[0].subtitle && (
-              <p className="text-brand-100 text-sm md:text-base">{banners[0].subtitle}</p>
-            )}
-            <Link href="/categories" className="mt-6 inline-flex items-center gap-2 bg-white text-brand-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-50 transition-colors">
-              Shop Now <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 w-64 h-64 rounded-full bg-white/10 -translate-y-1/3 translate-x-1/3" />
-          <div className="absolute right-16 bottom-0 w-40 h-40 rounded-full bg-white/5 translate-y-1/3" />
-        </div>
-      ) : (
-        <div className="rounded-2xl overflow-hidden bg-gradient-to-r from-brand-600 to-brand-800 text-white p-8 md:p-12 relative">
-          <h1 className="text-2xl md:text-4xl font-bold mb-2">Fresh Groceries,<br />Delivered Fast</h1>
-          <p className="text-brand-100 mb-6">Order in minutes via WhatsApp</p>
-          <Link href="/categories" className="inline-flex items-center gap-2 bg-white text-brand-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-50 transition-colors">
-            Browse Products <ChevronRight className="w-4 h-4" />
+      <div className="relative rounded-[28px] overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 text-white">
+        <div className="p-7 md:p-12 relative z-10 max-w-lg">
+          <span className="inline-block badge bg-amber-400 text-emerald-950 mb-3 px-3 py-1">
+            🌿 Fresh stock daily
+          </span>
+          <h1 className="text-[28px] md:text-4xl font-extrabold leading-tight tracking-tight mb-2">
+            {banners?.[0]?.title || 'Groceries delivered to your door'}
+          </h1>
+          <p className="text-emerald-100/90 text-sm md:text-base font-medium">
+            {banners?.[0]?.subtitle || 'Order in minutes — confirm instantly via WhatsApp'}
+          </p>
+          <Link href="/categories" className="mt-6 inline-flex items-center gap-2 bg-white text-emerald-800 px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-emerald-50 active:scale-95 transition-all shadow-lg shadow-emerald-950/20">
+            Start Shopping <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-      )}
+        {/* Decorative blobs */}
+        <div className="absolute right-[-60px] top-[-60px] w-72 h-72 rounded-full bg-white/[0.06]" />
+        <div className="absolute right-10 bottom-[-80px] w-56 h-56 rounded-full bg-amber-400/10" />
+        <div className="absolute right-16 top-1/2 -translate-y-1/2 text-[120px] opacity-[0.08] hidden md:block select-none">🛒</div>
+      </div>
 
-      {/* Trust badges */}
+      {/* Trust strip */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: Leaf, label: 'Fresh Daily', sub: 'Farm to doorstep' },
-          { icon: Clock, label: 'Fast Delivery', sub: 'Same day slots' },
-          { icon: Zap, label: 'Easy Orders', sub: 'Via WhatsApp' },
-        ].map(({ icon: Icon, label, sub }) => (
+          { icon: Leaf, label: 'Fresh Daily', sub: 'Farm sourced', color: 'emerald' },
+          { icon: Clock, label: 'Fast Delivery', sub: 'Same-day slots', color: 'amber' },
+          { icon: MessageCircle, label: 'Easy Orders', sub: 'Via WhatsApp', color: 'sky' },
+        ].map(({ icon: Icon, label, sub, color }) => (
           <div key={label} className="card p-4 text-center">
-            <Icon className="w-6 h-6 text-brand-600 mx-auto mb-1.5" />
-            <p className="text-sm font-semibold text-gray-900">{label}</p>
-            <p className="text-xs text-gray-500">{sub}</p>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2 ${
+              color === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
+              color === 'amber' ? 'bg-amber-50 text-amber-600' :
+              'bg-sky-50 text-sky-600'
+            }`}>
+              <Icon className="w-5 h-5" />
+            </div>
+            <p className="text-[13px] font-bold text-stone-800">{label}</p>
+            <p className="text-[11px] text-stone-400 font-medium">{sub}</p>
           </div>
         ))}
       </div>
@@ -79,9 +72,9 @@ export default async function HomePage() {
       {categories && categories.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Shop by Category</h2>
-            <Link href="/categories" className="text-sm text-brand-600 font-medium flex items-center gap-1 hover:underline">
-              All <ChevronRight className="w-4 h-4" />
+            <h2 className="section-title">Shop by Category</h2>
+            <Link href="/categories" className="text-sm text-emerald-700 font-bold flex items-center gap-0.5 hover:underline">
+              All <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3">
@@ -89,14 +82,15 @@ export default async function HomePage() {
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-gray-100 hover:border-brand-200 hover:shadow-sm transition-all group"
+                className="flex flex-col items-center gap-2 p-3 rounded-3xl bg-white border border-stone-100 hover:border-emerald-200 hover:shadow-md hover:-translate-y-0.5 transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-xl">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-xl overflow-hidden">
                   {cat.image_url ? (
-                    <Image src={cat.image_url} alt={cat.name} width={48} height={48} className="object-cover rounded-xl" />
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover rounded-2xl" />
                   ) : '🛒'}
                 </div>
-                <span className="text-xs text-center text-gray-700 font-medium line-clamp-2 group-hover:text-brand-700">
+                <span className="text-[11px] text-center text-stone-700 font-bold line-clamp-2 group-hover:text-emerald-700 leading-tight">
                   {cat.name}
                 </span>
               </Link>
@@ -109,12 +103,15 @@ export default async function HomePage() {
       {featuredProducts && featuredProducts.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Featured Products</h2>
-            <Link href="/categories" className="text-sm text-brand-600 font-medium flex items-center gap-1 hover:underline">
-              View all <ChevronRight className="w-4 h-4" />
+            <div>
+              <h2 className="section-title">Best Sellers</h2>
+              <p className="text-xs text-stone-400 font-medium mt-0.5">Loved by your neighbours</p>
+            </div>
+            <Link href="/categories" className="text-sm text-emerald-700 font-bold flex items-center gap-0.5 hover:underline">
+              View all <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
             {(featuredProducts as Product[]).map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

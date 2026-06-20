@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, Minus, ShoppingCart } from 'lucide-react'
+import { Plus, Minus, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/lib/cart'
 import { Product } from '@/types'
 import Link from 'next/link'
@@ -12,36 +12,31 @@ export default function AddToCartButton({ product }: { product: Product }) {
 
   if (quantity === 0) {
     return (
-      <div className="flex gap-3">
-        <button
-          onClick={() => addItem(product)}
-          className="btn-primary flex-1 py-3"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          Add to Cart
-        </button>
-      </div>
+      <button onClick={() => addItem(product)} className="btn-primary py-3.5">
+        <ShoppingBag className="w-4 h-4" />
+        Add to Cart
+      </button>
     )
   }
 
   return (
     <div className="flex gap-3 items-center">
-      <div className="flex items-center gap-3 flex-1 justify-center bg-gray-100 rounded-xl p-2">
+      <div className="flex items-center gap-3 flex-1 justify-center bg-emerald-700 rounded-2xl p-2 shadow-sm">
         <button
           onClick={() => updateQuantity(product.id, quantity - 1)}
-          className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+          className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-90 transition-all text-white"
         >
           <Minus className="w-4 h-4" />
         </button>
-        <span className="text-lg font-bold text-gray-900 w-8 text-center">{quantity}</span>
+        <span className="text-lg font-extrabold text-white w-8 text-center">{quantity}</span>
         <button
           onClick={() => addItem(product, 1)}
-          className="w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center hover:bg-brand-700 transition-colors shadow-sm"
+          className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 active:scale-90 transition-all text-white"
         >
           <Plus className="w-4 h-4" />
         </button>
       </div>
-      <Link href="/cart" className="btn-secondary py-3 px-5">
+      <Link href="/cart" className="btn-secondary py-3.5 px-5">
         View Cart
       </Link>
     </div>
