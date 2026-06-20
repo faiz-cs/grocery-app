@@ -4,45 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-[#f7f5f0] text-stone-900;
+    @apply bg-[#f5f6f3] text-ink-900;
   }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  input, textarea, select {
-    @apply outline-none;
-  }
+  * { box-sizing: border-box; }
+  input, textarea, select { @apply outline-none; }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-emerald-900/10;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-ink-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-ink-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-lime-400 px-5 py-2.5 text-sm font-extrabold text-ink-900 transition-all hover:bg-lime-300 active:scale-95 shadow-lg shadow-lime-400/20;
+  }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition-all hover:bg-stone-50 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-ink-200 bg-white px-5 py-2.5 text-sm font-bold text-ink-700 transition-all hover:bg-ink-50 active:scale-95;
   }
-
   .btn-whatsapp {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-lg shadow-green-900/15;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3.5 text-sm font-extrabold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-lg shadow-green-900/20;
   }
-
   .card {
-    @apply rounded-3xl bg-white shadow-[0_2px_12px_-2px_rgba(28,25,23,0.06)] border border-stone-100;
+    @apply rounded-3xl bg-white shadow-[0_1px_3px_rgba(10,11,14,0.06)] border border-ink-100;
   }
-
   .input {
-    @apply w-full rounded-2xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm transition-all focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 focus:bg-white;
+    @apply w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm transition-all focus:border-ink-900 focus:ring-4 focus:ring-ink-900/5;
   }
-
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold;
-  }
-
-  .section-title {
-    @apply text-xl font-extrabold text-stone-900 tracking-tight;
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide;
   }
 }
 
@@ -50,10 +38,6 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
-.scroll-row::-webkit-scrollbar {
-  display: none;
-}
-.scroll-row {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row { -ms-overflow-style: none; scrollbar-width: none; }
+.scroll-row > * { scroll-snap-align: start; }

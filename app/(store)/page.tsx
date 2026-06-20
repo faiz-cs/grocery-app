@@ -1,123 +1,138 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import Image from 'next/image'
 import ProductCard from '@/components/store/ProductCard'
-import { ChevronRight, Leaf, Clock, MessageCircle } from 'lucide-react'
-import type { Banner, Category, Product } from '@/types'
+import CategoryStrip from '@/components/store/CategoryStrip'
+import { ChevronRight, Clock, ShieldCheck, Truck, Percent } from 'lucide-react'
+import type { Category, Product } from '@/types'
 
 export const revalidate = 60
 
 export default async function HomePage() {
   const supabase = createClient()
 
-  const [{ data: banners }, { data: categories }, { data: featuredProducts }] =
+  const [{ data: banners }, { data: categories }, { data: featuredProducts }, { data: dealsProducts }] =
     await Promise.all([
       supabase.from('banners').select('*').eq('is_active', true).order('display_order'),
-      supabase.from('categories').select('*').eq('is_active', true).order('display_order').limit(8),
-      supabase
-        .from('products')
-        .select('*, category:categories(*)')
-        .eq('is_available', true)
-        .eq('is_featured', true)
-        .order('created_at', { ascending: false })
-        .limit(8),
+      supabase.from('categories').select('*').eq('is_active', true).order('display_order'),
+      supabase.from('products').select('*, category:categories(*)').eq('is_available', true).eq('is_featured', true).order('created_at', { ascending: false }).limit(12),
+      supabase.from('products').select('*, category:categories(*)').eq('is_available', true).not('original_price', 'is', null).limit(8),
     ])
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-5 space-y-9">
-      {/* Hero Banner */}
-      <div className="relative rounded-[28px] overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 text-white">
-        <div className="p-7 md:p-12 relative z-10 max-w-lg">
-          <span className="inline-block badge bg-amber-400 text-emerald-950 mb-3 px-3 py-1">
-            🌿 Fresh stock daily
-          </span>
-          <h1 className="text-[28px] md:text-4xl font-extrabold leading-tight tracking-tight mb-2">
-            {banners?.[0]?.title || 'Groceries delivered to your door'}
-          </h1>
-          <p className="text-emerald-100/90 text-sm md:text-base font-medium">
-            {banners?.[0]?.subtitle || 'Order in minutes — confirm instantly via WhatsApp'}
-          </p>
-          <Link href="/categories" className="mt-6 inline-flex items-center gap-2 bg-white text-emerald-800 px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-emerald-50 active:scale-95 transition-all shadow-lg shadow-emerald-950/20">
-            Start Shopping <ChevronRight className="w-4 h-4" />
-          </Link>
+    <div>
+      {/* Category strip — sticky-feel quick nav, Blinkit style */}
+      <CategoryStrip categories={(categories as Category[]) || []} />
+
+      <div className="max-w-6xl mx-auto px-4 py-5 space-y-10">
+
+        {/* Hero — dark premium banner */}
+        <div className="relative rounded-[28px] overflow-hidden bg-ink-900">
+          <div className="relative z-10 p-7 md:p-10 max-w-lg">
+            <span className="badge bg-lime-400 text-ink-900 mb-3">
+              {banners?.[0]?.title ? 'Today\'s Special' : 'Supermarket savings'}
+            </span>
+            <h1 className="text-[26px] md:text-[34px] font-extrabold leading-[1.1] tracking-tight text-white mb-2">
+              {banners?.[0]?.title || 'Everything your home needs, delivered fast'}
+            </h1>
+            <p className="text-ink-300 text-sm md:text-[15px] font-medium mb-6">
+              {banners?.[0]?.subtitle || 'Groceries, essentials & more — order on WhatsApp in seconds'}
+            </p>
+            <Link href="/categories" className="btn-accent px-6 py-3">
+              Shop Now <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="absolute right-[-40px] top-[-40px] w-64 h-64 rounded-full bg-lime-400/[0.07]" />
+          <div className="absolute right-8 bottom-[-60px] w-48 h-48 rounded-full bg-lime-400/[0.05]" />
         </div>
-        {/* Decorative blobs */}
-        <div className="absolute right-[-60px] top-[-60px] w-72 h-72 rounded-full bg-white/[0.06]" />
-        <div className="absolute right-10 bottom-[-80px] w-56 h-56 rounded-full bg-amber-400/10" />
-        <div className="absolute right-16 top-1/2 -translate-y-1/2 text-[120px] opacity-[0.08] hidden md:block select-none">🛒</div>
-      </div>
 
-      {/* Trust strip */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { icon: Leaf, label: 'Fresh Daily', sub: 'Farm sourced', color: 'emerald' },
-          { icon: Clock, label: 'Fast Delivery', sub: 'Same-day slots', color: 'amber' },
-          { icon: MessageCircle, label: 'Easy Orders', sub: 'Via WhatsApp', color: 'sky' },
-        ].map(({ icon: Icon, label, sub, color }) => (
-          <div key={label} className="card p-4 text-center">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2 ${
-              color === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
-              color === 'amber' ? 'bg-amber-50 text-amber-600' :
-              'bg-sky-50 text-sky-600'
-            }`}>
-              <Icon className="w-5 h-5" />
+        {/* Trust strip — 4 compact tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { icon: Clock, label: '15-min delivery', color: 'text-lime-600 bg-lime-50' },
+            { icon: Percent, label: 'Daily deals', color: 'text-flame-500 bg-orange-50' },
+            { icon: Truck, label: 'Free above ₹199', color: 'text-sky-600 bg-sky-50' },
+            { icon: ShieldCheck, label: '100% quality', color: 'text-violet-600 bg-violet-50' },
+          ].map(({ icon: Icon, label, color }) => (
+            <div key={label} className="card flex items-center gap-2.5 p-3.5">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                <Icon className="w-[18px] h-[18px]" />
+              </div>
+              <span className="text-xs font-bold text-ink-700 leading-tight">{label}</span>
             </div>
-            <p className="text-[13px] font-bold text-stone-800">{label}</p>
-            <p className="text-[11px] text-stone-400 font-medium">{sub}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Categories */}
-      {categories && categories.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="section-title">Shop by Category</h2>
-            <Link href="/categories" className="text-sm text-emerald-700 font-bold flex items-center gap-0.5 hover:underline">
-              All <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3">
-            {(categories as Category[]).map(cat => (
-              <Link
-                key={cat.id}
-                href={`/category/${cat.slug}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-3xl bg-white border border-stone-100 hover:border-emerald-200 hover:shadow-md hover:-translate-y-0.5 transition-all group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-xl overflow-hidden">
-                  {cat.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover rounded-2xl" />
-                  ) : '🛒'}
+        {/* Deals carousel — horizontal scroll */}
+        {dealsProducts && dealsProducts.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-flame-500 flex items-center justify-center">
+                  <Percent className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-[11px] text-center text-stone-700 font-bold line-clamp-2 group-hover:text-emerald-700 leading-tight">
-                  {cat.name}
-                </span>
+                <h2 className="text-lg font-extrabold text-ink-900 tracking-tight">Deals For You</h2>
+              </div>
+              <Link href="/categories" className="text-xs text-ink-500 font-bold flex items-center gap-0.5 hover:text-ink-900">
+                See all <ChevronRight className="w-3.5 h-3.5" />
               </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Featured Products */}
-      {featuredProducts && featuredProducts.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="section-title">Best Sellers</h2>
-              <p className="text-xs text-stone-400 font-medium mt-0.5">Loved by your neighbours</p>
             </div>
-            <Link href="/categories" className="text-sm text-emerald-700 font-bold flex items-center gap-0.5 hover:underline">
-              View all <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
-            {(featuredProducts as Product[]).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+            <div className="flex gap-3.5 overflow-x-auto scroll-row pb-2 -mx-4 px-4">
+              {(dealsProducts as Product[]).map(product => (
+                <div key={product.id} className="w-[150px] shrink-0">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Shop by Aisle — category cards grid (BigBasket style) */}
+        {categories && categories.length > 0 && (
+          <section>
+            <h2 className="text-lg font-extrabold text-ink-900 tracking-tight mb-4">Shop by Aisle</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+              {(categories as Category[]).map((cat, idx) => {
+                const tints = ['bg-lime-50', 'bg-orange-50', 'bg-sky-50', 'bg-violet-50', 'bg-rose-50', 'bg-amber-50']
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/category/${cat.slug}`}
+                    className={`relative overflow-hidden rounded-3xl ${tints[idx % tints.length]} p-4 flex flex-col justify-between h-28 group hover:-translate-y-1 hover:shadow-lg transition-all`}
+                  >
+                    <span className="text-sm font-extrabold text-ink-800 leading-tight relative z-10">{cat.name}</span>
+                    <div className="self-end w-12 h-12 rounded-2xl bg-white/70 flex items-center justify-center overflow-hidden">
+                      {cat.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
+                      ) : <span className="text-xl">🛒</span>}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Featured Products — dense grid */}
+        {featuredProducts && featuredProducts.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-extrabold text-ink-900 tracking-tight">Best Sellers</h2>
+                <p className="text-xs text-ink-400 font-semibold mt-0.5">Most ordered this week</p>
+              </div>
+              <Link href="/categories" className="text-xs text-ink-500 font-bold flex items-center gap-0.5 hover:text-ink-900">
+                View all <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+              {(featuredProducts as Product[]).map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   )
 }
