@@ -21,7 +21,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
 
   return (
     <div className="flex gap-3 items-center">
-      <div className="flex items-center gap-3 flex-1 justify-center bg-lime-500 rounded-2xl p-2">
+      <div className="flex items-center gap-3 flex-1 justify-center bg-forest-800 rounded-2xl p-2">
         <button onClick={() => updateQuantity(product.id, quantity - 1)}
           className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center hover:bg-white/30 active:scale-90 transition-all text-white">
           <Minus className="w-4 h-4" />

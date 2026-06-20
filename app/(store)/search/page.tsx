@@ -29,7 +29,7 @@ export default async function SearchPage({
     <div className="max-w-6xl mx-auto px-4 py-6">
       <form className="flex items-center gap-3 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-forest-400" />
           <input
             name="q"
             defaultValue={query}
@@ -44,13 +44,13 @@ export default async function SearchPage({
       {query.length >= 2 ? (
         products.length > 0 ? (
           <>
-            <p className="text-sm text-ink-500 mb-4">{products.length} results for &quot;<strong>{query}</strong>&quot;</p>
+            <p className="text-sm text-forest-500 mb-4">{products.length} results for &quot;<strong>{query}</strong>&quot;</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {products.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </>
         ) : (
-          <div className="text-center py-20 text-ink-400">
+          <div className="text-center py-20 text-forest-400">
             <p className="text-lg font-medium">No products found</p>
             <p className="text-sm mt-1">Try a different search term</p>
           </div>
@@ -58,7 +58,7 @@ export default async function SearchPage({
       ) : (
         <div className="text-center py-20 text-gray-300">
           <Search className="w-12 h-12 mx-auto mb-3" />
-          <p className="text-ink-500">Type at least 2 characters to search</p>
+          <p className="text-forest-500">Type at least 2 characters to search</p>
         </div>
       )}
     </div>

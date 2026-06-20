@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#f5f6f3] text-ink-900;
+    @apply bg-cream-100 text-forest-900;
   }
   * { box-sizing: border-box; }
   input, textarea, select { @apply outline-none; }
@@ -12,22 +12,22 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-ink-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-ink-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-forest-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-lime-400 px-5 py-2.5 text-sm font-extrabold text-ink-900 transition-all hover:bg-lime-300 active:scale-95 shadow-lg shadow-lime-400/20;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-carrot-500 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-carrot-600 active:scale-95 shadow-md shadow-carrot-500/25;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-ink-200 bg-white px-5 py-2.5 text-sm font-bold text-ink-700 transition-all hover:bg-ink-50 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-forest-900 bg-white px-6 py-3 text-sm font-bold text-forest-900 transition-all hover:bg-forest-50 active:scale-95;
   }
   .btn-whatsapp {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3.5 text-sm font-extrabold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-lg shadow-green-900/20;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm font-extrabold text-white transition-all hover:bg-[#20bd5a] active:scale-95 shadow-lg shadow-green-900/15;
   }
   .card {
-    @apply rounded-3xl bg-white shadow-[0_1px_3px_rgba(10,11,14,0.06)] border border-ink-100;
+    @apply rounded-2xl bg-white shadow-[0_1px_2px_rgba(13,46,15,0.06)] border border-forest-100/60;
   }
   .input {
-    @apply w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm transition-all focus:border-ink-900 focus:ring-4 focus:ring-ink-900/5;
+    @apply w-full rounded-xl border-2 border-forest-100 bg-white px-4 py-3 text-sm transition-all focus:border-forest-700 focus:ring-4 focus:ring-forest-700/5;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide;

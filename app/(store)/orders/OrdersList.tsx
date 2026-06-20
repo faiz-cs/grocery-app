@@ -42,7 +42,7 @@ export default function OrdersList() {
         </div>
       )}
 
-      <h1 className="text-2xl font-bold text-ink-900 mb-6">My Orders</h1>
+      <h1 className="text-2xl font-bold text-forest-900 mb-6">My Orders</h1>
 
       {loading ? (
         <div className="space-y-3">
@@ -51,7 +51,7 @@ export default function OrdersList() {
       ) : orders.length === 0 ? (
         <div className="text-center py-20">
           <ClipboardList className="w-14 h-14 text-gray-200 mx-auto mb-4" />
-          <p className="text-lg font-semibold text-ink-600">No orders yet</p>
+          <p className="text-lg font-semibold text-forest-600">No orders yet</p>
           <Link href="/categories" className="btn-primary mt-6">Start Shopping</Link>
         </div>
       ) : (
@@ -62,9 +62,9 @@ export default function OrdersList() {
               <div key={order.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-ink-400 mb-1">#{order.id.slice(0, 8).toUpperCase()}</p>
-                    <p className="font-bold text-ink-900">{formatCurrency(order.total_amount)}</p>
-                    <p className="text-xs text-ink-500 mt-0.5">{formatDate(order.created_at)}</p>
+                    <p className="text-xs text-forest-400 mb-1">#{order.id.slice(0, 8).toUpperCase()}</p>
+                    <p className="font-bold text-forest-900">{formatCurrency(order.total_amount)}</p>
+                    <p className="text-xs text-forest-500 mt-0.5">{formatDate(order.created_at)}</p>
                   </div>
                   <span className={`badge ${
                     status.color === 'green' ? 'bg-green-100 text-green-700' :
@@ -78,7 +78,7 @@ export default function OrdersList() {
                   </span>
                 </div>
                 {order.order_items && order.order_items.length > 0 && (
-                  <p className="text-xs text-ink-500 mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-forest-500 mt-3 pt-3 border-t border-gray-100">
                     {order.order_items.map(i => `${i.product_name} ×${i.quantity}`).join(', ')}
                   </p>
                 )}

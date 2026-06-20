@@ -32,7 +32,7 @@ export default function IOSInstallBanner() {
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4">
         <div className="flex items-start gap-3">
           {/* App icon */}
-          <div className="w-12 h-12 rounded-xl bg-lime-500 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-forest-800 flex items-center justify-center shrink-0">
             <svg viewBox="0 0 512 512" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M140 220 L372 220 L340 360 Q336 380 316 380 L196 380 Q176 380 172 360 Z" fill="white"/>
               <path d="M190 220 Q170 160 210 130 Q240 108 256 120" stroke="white" strokeWidth="36" strokeLinecap="round"/>
@@ -42,21 +42,21 @@ export default function IOSInstallBanner() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-ink-900 text-sm">Install FreshMart</p>
-            <p className="text-xs text-ink-500 mt-0.5 leading-relaxed">
+            <p className="font-semibold text-forest-900 text-sm">Install FreshMart</p>
+            <p className="text-xs text-forest-500 mt-0.5 leading-relaxed">
               Tap <span className="inline-flex items-center gap-0.5 text-blue-500 font-medium">
                 <Share className="w-3 h-3" /> Share
               </span> then <span className="font-medium text-gray-700">&quot;Add to Home Screen&quot;</span> for the best experience.
             </p>
           </div>
-          <button onClick={dismiss} className="text-ink-400 hover:text-ink-600 shrink-0 mt-0.5">
+          <button onClick={dismiss} className="text-forest-400 hover:text-forest-600 shrink-0 mt-0.5">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Arrow pointing to Safari share button */}
         <div className="mt-3 flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
-          <div className="flex items-center gap-1.5 text-xs text-ink-600">
+          <div className="flex items-center gap-1.5 text-xs text-forest-600">
             <span className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center">
               <Share className="w-3 h-3 text-white" />
             </span>

@@ -26,7 +26,7 @@ export default function AccountPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-ink-900 mb-6">My Account</h1>
+      <h1 className="text-2xl font-bold text-forest-900 mb-6">My Account</h1>
 
       {saved && (
         <div className="mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-medium">
@@ -70,7 +70,7 @@ export default function AccountPage() {
         </button>
       </form>
 
-      <p className="text-xs text-ink-400 text-center mt-4">
+      <p className="text-xs text-forest-400 text-center mt-4">
         Your details are saved locally and auto-filled at checkout.
       </p>
     </div>

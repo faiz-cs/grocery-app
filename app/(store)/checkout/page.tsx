@@ -111,8 +111,8 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <CheckCircle className="w-16 h-16 text-stone-200 mx-auto mb-4" />
-        <h2 className="text-xl font-extrabold text-ink-800 mb-2">No items to checkout</h2>
+        <CheckCircle className="w-16 h-16 text-forest-200 mx-auto mb-4" />
+        <h2 className="text-xl font-extrabold text-forest-800 mb-2">No items to checkout</h2>
         <Link href="/categories" className="btn-primary mt-4">Browse Products</Link>
       </div>
     )
@@ -120,10 +120,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <Link href="/cart" className="inline-flex items-center gap-2 text-sm text-ink-500 font-medium hover:text-emerald-700 mb-6 transition-colors">
+      <Link href="/cart" className="inline-flex items-center gap-2 text-sm text-forest-500 font-medium hover:text-forest-700 mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Cart
       </Link>
-      <h1 className="text-2xl font-extrabold text-ink-900 tracking-tight mb-6">Checkout</h1>
+      <h1 className="text-2xl font-extrabold text-forest-900 tracking-tight mb-6">Checkout</h1>
 
       {errorMsg && (
         <div className="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm font-medium">
@@ -135,28 +135,28 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-5">
           <div className="card p-5 space-y-4">
-            <h2 className="font-extrabold text-ink-900">Delivery Details</h2>
+            <h2 className="font-extrabold text-forest-900">Delivery Details</h2>
             <div>
-              <label className="block text-sm font-bold text-ink-600 mb-1.5">Full Name *</label>
+              <label className="block text-sm font-bold text-forest-600 mb-1.5">Full Name *</label>
               <input name="name" value={form.name} onChange={handleChange} required className="input" placeholder="Your name" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-ink-600 mb-1.5">Phone Number *</label>
+              <label className="block text-sm font-bold text-forest-600 mb-1.5">Phone Number *</label>
               <input name="phone" value={form.phone} onChange={handleChange} required type="tel" className="input" placeholder="+91 98765 43210" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-ink-600 mb-1.5">Delivery Address *</label>
+              <label className="block text-sm font-bold text-forest-600 mb-1.5">Delivery Address *</label>
               <textarea name="address" value={form.address} onChange={handleChange} required className="input resize-none h-24" placeholder="House/flat number, street, area, city…" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-ink-600 mb-1.5">Preferred Delivery Slot</label>
+              <label className="block text-sm font-bold text-forest-600 mb-1.5">Preferred Delivery Slot</label>
               <select name="deliverySlot" value={form.deliverySlot} onChange={handleChange} className="input">
                 <option value="">Select a time slot</option>
                 {DELIVERY_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-ink-600 mb-1.5">Special Instructions</label>
+              <label className="block text-sm font-bold text-forest-600 mb-1.5">Special Instructions</label>
               <textarea name="notes" value={form.notes} onChange={handleChange} className="input resize-none h-20" placeholder="Allergies, substitutions, gate code…" />
             </div>
           </div>
@@ -164,16 +164,16 @@ export default function CheckoutPage() {
 
         <div className="md:col-span-1">
           <div className="card p-5 sticky top-24 space-y-4">
-            <h2 className="font-extrabold text-ink-900">Order Summary</h2>
+            <h2 className="font-extrabold text-forest-900">Order Summary</h2>
             <div className="space-y-2 text-sm max-h-48 overflow-y-auto pr-1">
               {items.map(({ product, quantity }) => (
-                <div key={product.id} className="flex justify-between gap-2 text-ink-600 font-medium">
+                <div key={product.id} className="flex justify-between gap-2 text-forest-600 font-medium">
                   <span className="line-clamp-1">{product.name} × {quantity}</span>
-                  <span className="font-bold text-ink-800 shrink-0">{formatCurrency(product.price * quantity)}</span>
+                  <span className="font-bold text-forest-800 shrink-0">{formatCurrency(product.price * quantity)}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-dashed border-ink-200 pt-3 flex justify-between font-extrabold text-ink-900">
+            <div className="border-t border-dashed border-forest-200 pt-3 flex justify-between font-extrabold text-forest-900">
               <span>Total</span>
               <span>{formatCurrency(totalAmount)}</span>
             </div>
@@ -181,7 +181,7 @@ export default function CheckoutPage() {
               <MessageCircle className="w-5 h-5" />
               {loading ? 'Placing Order…' : 'Place Order via WhatsApp'}
             </button>
-            <p className="text-xs text-ink-400 text-center font-medium">
+            <p className="text-xs text-forest-400 text-center font-medium">
               Payment collected on delivery (Cash / UPI)
             </p>
           </div>
