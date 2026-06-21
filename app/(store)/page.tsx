@@ -79,7 +79,7 @@ export default async function HomePage() {
                 See all <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="flex gap-3.5 overflow-x-auto scroll-row pb-2 -mx-4 px-4">
+            <div className="flex gap-3.5 overflow-x-auto scroll-row pb-2 -mx-4 px-4 w-[calc(100%+2rem)]">
               {(dealsProducts as Product[]).map(product => (
                 <div key={product.id} className="w-[150px] shrink-0">
                   <ProductCard product={product} />

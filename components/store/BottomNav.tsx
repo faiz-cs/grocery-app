@@ -19,7 +19,10 @@ export default function BottomNav() {
   const { totalItems } = useCart()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-forest-100 md:hidden">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-forest-100 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <div className="flex">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href || (href !== '/' && pathname.startsWith(href))
