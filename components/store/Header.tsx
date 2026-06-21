@@ -47,8 +47,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-forest-100">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center gap-3 py-3.5">
+      <div className="max-w-6xl mx-auto px-4 w-full">
+        <div className="flex items-center gap-2 sm:gap-3 py-3.5">
           {/* Logo + location */}
           <Link href="/" className="flex items-center gap-2.5 mr-1 shrink-0">
             <div className="w-9 h-9 rounded-full bg-forest-800 flex items-center justify-center shrink-0">
@@ -71,7 +71,7 @@ export default function Header() {
           </Link>
 
           {/* Search */}
-          <div ref={ref} className="relative flex-1 max-w-xl">
+          <div ref={ref} className="relative flex-1 min-w-0 max-w-xl">
             <div className="flex items-center gap-2 bg-forest-50 rounded-full px-4 py-2.5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-forest-700/20 border border-transparent focus-within:border-forest-200">
               <Search className="w-4 h-4 text-forest-400 shrink-0" />
               <input
@@ -79,7 +79,7 @@ export default function Header() {
                 onChange={e => setQuery(e.target.value)}
                 onFocus={() => results.length > 0 && setOpen(true)}
                 placeholder="Search for items..."
-                className="flex-1 bg-transparent text-sm text-forest-900 placeholder-forest-400 outline-none font-medium"
+                className="flex-1 min-w-0 bg-transparent text-sm text-forest-900 placeholder-forest-400 outline-none font-medium"
               />
               {query && (
                 <button onClick={clear} className="text-forest-400 hover:text-forest-600">
